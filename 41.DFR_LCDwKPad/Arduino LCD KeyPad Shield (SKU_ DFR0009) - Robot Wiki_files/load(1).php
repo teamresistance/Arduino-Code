@@ -1,0 +1,1 @@
+#collapse-pre-one .mw-collapsible-toggle .up,#collapse-pre-one.mw-collapsed .mw-collapsible-toggle .down{display:none}#collapse-pre-one .mw-collapsible-toggle .down,#collapse-pre-one.mw-collapsed .mw-collapsible-toggle .up{display:block}#bodyContent{font-size:1.3em}
