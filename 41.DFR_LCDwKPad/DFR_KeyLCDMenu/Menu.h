@@ -11,14 +11,15 @@ class Menu
 {
   public:	
     Menu();
-    int getMenuMode();            //Returns Menu Mode
-    void UpdateMenu(int keyVal)   //Update submenu pointer or action
+    int GetMenuMode();                //Returns Menu Mode, Main, Sub, Confirm
+    int GetActMenu();                 //Returns Active Menu Pointer, 1 to max items
+    void UpdateMenu(int keyVal)       //Update submenu pointer or action
   private:
     void setMenuMode(int mode);       //Sets Menu Mode
     void setMaxItems(int maxItems);   //Set the max menu items
     int _menuMode                     //Used to determine how to handle Sel & Esc
-    int _subMenuPtr                   //Points to subMenu choice
-    int _actMenuPtr
+    int _subMenuPtr                   //Update Pointer to subMenu choice
+    int _actMenuPtr                   //Active Pointer to subMenu choice
 };
 
 #endif
