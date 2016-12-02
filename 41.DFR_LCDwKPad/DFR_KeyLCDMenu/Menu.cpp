@@ -4,27 +4,56 @@
 static int DEFAULT_KEY_PIN = 0; 
 static int DEFAULT_THRESHOLD = 5;
 
-Menu::Menu()
-{	
-  _refreshRate = 10;
-  _keyPin = DEFAULT_KEY_PIN;
-  _threshold = DEFAULT_THRESHOLD;
-  _keyIn = NO_KEY;
-  _curInput = NO_KEY;
-  _curKey = NO_KEY;
-  _prevInput = NO_KEY;
-  _prevKey = NO_KEY;
-  _nxTime = 0;
+Menu::Menu(int maxItems)  
+  int _maxItems = maxItems    //Set the max # of items in the Menu
+  int _menuMode = MAINMENU    //Used to determine how to handle Sel & Esc
+  int _subMenuPtr = 0         //Points to subMenu choice
 }
 
-void Menu::set_KeyARV(int keyARVs[])
-{
-  RIGHTKEY_ARV = keyARVs[0];
-  UPKEY_ARV = keyARVs[1];
-  DOWNKEY_ARV = keyARVs[2];
-  LEFTKEY_ARV = keyARVs[3];
-  SELKEY_ARV = keyARVs[4];
-  NOKEY_ARV = keyARVs[5];
+void UpdateMenu(int keyVal){   //Update submenu pointer or action
+  if (keyVal < 0 && keyVal > _maxItems) {
+    switch (keyVal) {
+      case 1:             //Next Prim
+      _subMenuPtr = 0;    //Cancel Update
+      _menuMode = 0;
+      break;
+      case 2:               //Select (Left)
+      switch (_menuMode) {
+        case 0:             //On Main
+        _subMenuPtr = 1;    //Set to first choice
+        _menuMode = 1;      //and set mode to subMenu
+        break;
+        case 1:             //On subMenu
+          _menuMode = 3;    //Set to Confirm mode
+        break;
+        case 2:             //Confirm mode
+        _actMenuPtr = _subMenuPtr;  //Set actMenuPtr to subMenuPtr
+        _menuMode = 0;      //and mode to Main
+        break;
+      }
+      break;
+      case 3:             //Up
+      _subMenuPtr-- ;     //Decrement subMenuPtr
+      _menuMode = 1;
+      break;
+      case 4:             //Dn
+      _subMenuPtr++;      //Increment subMenuPtr
+      _menuMode = 0;
+      break;
+      case 5:             //Esc (Right)
+      switch (_menuMode) {
+        case 0:             //On Main
+        // do nothing.  Should be handled in main code
+        break;
+        case 1:             //On subMenu
+        _menuMode = 0;      //Set back to Main mode
+        break;
+        case 2:             //Confirm mode
+        _menuMode = 1;      //Set back to subMenu mode
+        break;
+      }
+      break;
+    }
 }
 
 int Menu::getKeyARV(int keyARVIndx)

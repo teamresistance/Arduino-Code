@@ -3,31 +3,22 @@
 
 #include "Arduino.h"
 
-#define SAMPLE_WAIT -1
-#define NO_KEY 0
+#define MAINMENU 0
+#define SUBMENU 1
+#define CONFMENU 2
 
 class Menu
 {
   public:	
     Menu();
-    int getKey();             //Returns the key pressed
-    void set_KeyARV(int[6]);  //None-0,Select-1,Left-2
-       			                  //Up-3,Down-4,Right-5
-    int getKeyARV(int);       //Gets the presently assigned AVR value
-    void setRate(int);
-    void calibrKeyARVs();     //Reads & assigns AVRs when button is pressed
+    int getMenuMode();            //Returns Menu Mode
+    void UpdateMenu(int keyVal)   //Update submenu pointer or action
   private:
-    int _refreshRate;
-    int _keyPin;
-    int _threshold;
-    int _keyIn;
-    int _curInput;
-    int _curKey;
-    int _prevInput;
-    int _prevKey;
-    boolean _change;
-    unsigned long _nxTime;
-    int _tmpVal;
+    void setMenuMode(int mode);       //Sets Menu Mode
+    void setMaxItems(int maxItems);   //Set the max menu items
+    int _menuMode                     //Used to determine how to handle Sel & Esc
+    int _subMenuPtr                   //Points to subMenu choice
+    int _actMenuPtr
 };
 
 #endif
