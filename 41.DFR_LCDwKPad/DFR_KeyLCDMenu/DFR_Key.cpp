@@ -25,7 +25,6 @@ DFR_Key::DFR_Key()
   _prevInput = NO_KEY;
   _prevKey = NO_KEY;
   _nxTime = 0;
-  _addTime = 0;  //add for git
 }
 
 void DFR_Key::set_KeyARV(int keyARVs[])

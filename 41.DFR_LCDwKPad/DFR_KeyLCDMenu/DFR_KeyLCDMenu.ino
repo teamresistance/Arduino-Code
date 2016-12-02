@@ -15,6 +15,8 @@ Sel-1(641) Left-2(410) Right-5(0)
 
 #include <LiquidCrystal.h>
 #include "DFR_Key.h"
+#include "Menu.h"
+#include "DisplayLCD.h"
 
 //Pin  for DFRobot LCD Keypad Shield
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7); 

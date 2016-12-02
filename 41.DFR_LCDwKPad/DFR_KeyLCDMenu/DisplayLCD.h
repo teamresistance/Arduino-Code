@@ -1,15 +1,15 @@
-#ifndef DFR_Key_h
-#define DFR_Key_h
+#ifndef DisplayLCD_h
+#define DisplayLCD_h
 
 #include "Arduino.h"
 
 #define SAMPLE_WAIT -1
 #define NO_KEY 0
 
-class DFR_Key
+class DisplayLCD
 {
   public:	
-    DFR_Key();
+    DisplayLCD();
     int getKey();             //Returns the key pressed
     void set_KeyARV(int[6]);  //None-0,Select-1,Left-2
        			                  //Up-3,Down-4,Right-5

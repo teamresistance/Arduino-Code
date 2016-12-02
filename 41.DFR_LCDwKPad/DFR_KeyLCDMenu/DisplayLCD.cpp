@@ -1,10 +1,10 @@
 #include "Arduino.h"
-#include "DFR_Key.h"
+#include "DisplayLCD.h"
 
 static int DEFAULT_KEY_PIN = 0; 
 static int DEFAULT_THRESHOLD = 5;
 
-DFR_Key::DFR_Key()
+DisplayLCD::DisplayLCD()
 {	
   _refreshRate = 10;
   _keyPin = DEFAULT_KEY_PIN;
@@ -17,7 +17,7 @@ DFR_Key::DFR_Key()
   _nxTime = 0;
 }
 
-void DFR_Key::set_KeyARV(int keyARVs[])
+void DisplayLCD::set_KeyARV(int keyARVs[])
 {
   RIGHTKEY_ARV = keyARVs[0];
   UPKEY_ARV = keyARVs[1];
@@ -27,7 +27,7 @@ void DFR_Key::set_KeyARV(int keyARVs[])
   NOKEY_ARV = keyARVs[5];
 }
 
-int DFR_Key::getKeyARV(int keyARVIndx)
+int DisplayLCD::getKeyARV(int keyARVIndx)
 {
   switch (keyARVIndx) {
     case 0:
@@ -53,7 +53,7 @@ int DFR_Key::getKeyARV(int keyARVIndx)
   }
 }
 
-int DFR_Key::getKey()
+int DisplayLCD::getKey()
 {
  if (millis() > _nxTime)
  {
@@ -98,12 +98,12 @@ int DFR_Key::getKey()
   }
 }
 
-void DFR_Key::setRate(int rate)
+void DisplayLCD::setRate(int rate)
 {
   _refreshRate = rate;
 }
 
-void DFR_Key::calibrKeyARVs()
+void DisplayLCD::calibrKeyARVs()
 {
 	int localVal;
 	int keyVals[6];
