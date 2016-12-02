@@ -13,42 +13,42 @@ Menu::Menu(int maxItems)
 void UpdateMenu(int keyVal){   //Update submenu pointer or action
   if (keyVal < 0 && keyVal > _maxItems) {
     switch (keyVal) {
-      case 1:             //Next Prim
-      _subMenuPtr = 0;    //Cancel Update
+      case 1:               //--Next Prim
+      _subMenuPtr = 0;      //Cancel Update
       _menuMode = 0;
       break;
-      case 2:               //Select (Left)
+      case 2:               //--Select (Left)
       switch (_menuMode) {
-        case 0:             //On Main
-        _subMenuPtr = 1;    //Set to first choice
+        case 0:             //-On Main
+        _subMenuPtr = _actMenuPtr;  //Set to prv choice
         _menuMode = 1;      //and set mode to subMenu
         break;
-        case 1:             //On subMenu
+        case 1:             //-On subMenu
           _menuMode = 3;    //Set to Confirm mode
         break;
-        case 2:             //Confirm mode
+        case 2:             //-Confirm mode
         _actMenuPtr = _subMenuPtr;  //Set actMenuPtr to subMenuPtr
         _menuMode = 0;      //and mode to Main
         break;
       }
       break;
-      case 3:             //Up
+      case 3:             //--Up
       _subMenuPtr-- ;     //Decrement subMenuPtr
       _menuMode = 1;
       break;
-      case 4:             //Dn
+      case 4:             //--Dn
       _subMenuPtr++;      //Increment subMenuPtr
       _menuMode = 0;
       break;
-      case 5:             //Esc (Right)
+      case 5:             //--Esc (Right)
       switch (_menuMode) {
-        case 0:             //On Main
+        case 0:             //-On Main
         // do nothing.  Should be handled in main code
         break;
-        case 1:             //On subMenu
+        case 1:             //-On subMenu
         _menuMode = 0;      //Set back to Main mode
         break;
-        case 2:             //Confirm mode
+        case 2:             //-Confirm mode
         _menuMode = 1;      //Set back to subMenu mode
         break;
       }
