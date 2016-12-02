@@ -20,7 +20,7 @@ Right  - 5
 */
 
 #include <LiquidCrystal.h>
-#include <DFR_Key.h>
+#include <DFR_Keyv02.h>
 
 //Pin assignments for DFRobot LCD Keypad Shield
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7); 
