@@ -22,14 +22,18 @@ String keyArray[6] = {"0 - NO KEY", "1 - Next", "2 - Select", "3 - Up", "4 - Dn"
 unsigned long calKeyTimer = 0;
 
 //Create Menus
-Menu MainMenu(3);
-String MainAr[3] = {"Defence", "Gate", "Direction"};
-Menu DefMenu(5);
-String DefAr[5] = {"Rough Terrain", "Water Xing", "Sally Port", "Tetter Totter", "Low Boy"};
+#define GATEMENU 0
+#define DEFMENU 1
+#define DIRMENU 2
 Menu GateMenu(5);
 String GateAr[5] = {"1(LB)", "2", "3", "4", "5"};
+Menu DefMenu(5);
+String DefAr[5] = {"Rough Terrain", "Water Xing", "Sally Port", "Tetter Totter", "Low Boy"};
 Menu DirMenu(2);
 String DirAr[2] = {"Forward", "Backward"};
+
+bool aMenuAct = false;
+int primMenuPtr = GATEMENU;
                 
 void setup() 
 { 
@@ -50,17 +54,78 @@ void setup()
 void loop() 
 { 
   localKey = keypad.getKey();
+
+  if (localKey > NO_KEY) {
+    keyNoPressTime = millis() + (180 * 1000);    
+  }else { 
+    if (keyNoPress){
+      localKey = NEXT_KEY;
+      keyNoPressTime = millis() + 5 * 1000;
+    }
+  }
+  keyNoPress = (millis() > keyNoPressTime);
+
+  if (localKey > NO_KEY) {    //Key pressed
+    aMenuAct = true;
+    if (GateMenu.GetMenuMode != MAINMENU) {
+      GateMenu.UpdateMenu(localKey);
+    }else if (DefMenu.GetMenuMode != MAINMENU) {
+      DefMenu.UpdateMenu(localKey);
+    }else if (DirMenu.GetMenuMode != MAINMENU) {
+      DirMenu.UpdateMenu(localKey);
+    } else {
+      aMenuAct = false;
+    }
+  
+    if (!aMenuAct) {
+      switch (localKey) {
+        case NEXT_KEY:              //--Next
+        primMenuPtr++;              //Increment to Next Primary Menu
+        if (primMenuPtr > DIRMENU) primMenu = GATEMENU;
+        break;
+        case SEL_KEY:               //--Select (Left)
+        switch (primMenu) {
+          case GATEMENU:            //Pass control to Gate Menu
+          GateMenu.UpdateMenu(localKey);
+          break;
+          case DEFMENU:             //Pass control to Defence Menu
+          DefMenu.UpdateMenu(localKey);
+          break;
+          case DIRMENU:             //Pass control to Direction Menu
+          DirMenu.UpdateMenu(localKey);
+          break;
+          default:
+          break;
+        }
+        break;
+        case UP_KEY:                //--Up
+        primMenuPtr--;              //Decrement to Prv Primary Menu
+        if (primMenuPtr < GATEMENU) primMenuPtr = DIRMENU;  //Wrap around
+        break;
+        case DN_KEY:                //--Dn
+        primMenuPtr++;              //Increment to Next Primary Menu
+        if (primMenuPtr > DIRMENU) primMenu = GATEMENU;   //Wrap araound
+        break;
+        case ESC_KEY:               //--Esc (Right)
+        autoMenuTime = millis();
+        break;
+        default:
+        break;
+      }
+    }
+  }
+  
   
   if (localKey != SAMPLE_WAIT)
   {
+    
     lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print("Current Key:");
+    line1 = DisplayLCD(1);
+    lcd.print(line1);
     lcd.setCursor(0, 1);
-
-    lcd.print(analogRead(0));
-    lcd.print(" : ");
-    lcd.print(keyArray[localKey]);
+    line2 = DisplayLCD(1);
+    lcd.print(line2);
   }
 
 //------------- Calibration mode for buttons -------------------
