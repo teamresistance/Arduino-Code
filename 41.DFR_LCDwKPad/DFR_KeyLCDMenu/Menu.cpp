@@ -1,26 +1,42 @@
 #include "Arduino.h"
 #include "Menu.h"
 
+int _subMenuPtr;                  //Update Pointer to subMenu choice
+int _menuMode;                    //Used to determine how to handle Sel & Esc
+int _actMenuPtr;                  //Active Pointer to subMenu choice
+int _maxItems;                     //Max menu items
+String itemNames[5];
+
+int pmaxItems = 3;
+const int MAINMODE = 0;
+const int SUBMODE = 1;
+const int CONFMODE = 2;
+
 static int DEFAULT_KEY_PIN = 0; 
 static int DEFAULT_THRESHOLD = 5;
 
-Menu::Menu(int maxItems)  
-  int _maxItems = maxItems    //Set the max # of items in the Menu
-  int _menuMode = MAINMENU    //Used to determine how to handle Sel & Esc
-  int _subMenuPtr = 0         //Update Pointer to subMenu choice
-  int _actMenuPtr = 1         //Active Pointer to subMenu choice
+Menu::Menu(int maxItems, String names[]){
+  _maxItems = maxItems;    //Set the max # of items in the Menu
+  _menuMode = MAINMENU;    //Used to determine how to handle Sel & Esc
+  _subMenuPtr = 0;         //Update Pointer to subMenu choice
+  _actMenuPtr = 1;         //Active Pointer to subMenu choice
+
+  String itemName[maxItems];
+  for (int i = 0; i < maxItems; i++){
+    itemName[i] = names[i];
+  }
 }
 
 int GetMenuMode() {
-  return __menuMode;
+  return _menuMode;
 }
 
 int GetActMenu() {
-  return __actMenuPtr;
+  return _actMenuPtr;
 }
 
 void UpdateMenu(int keyVal){   //Update submenu pointer or action
-  if (keyVal < 0 && keyVal > _maxItems) {
+  if (keyVal < 0 && keyVal > pmaxItems) {
     switch (keyVal) {
       case 1:               //--Next Prim
       _subMenuPtr = 0;              //Cancel Update
@@ -71,6 +87,7 @@ void UpdateMenu(int keyVal){   //Update submenu pointer or action
       default:        //--Default
       break;
     }
+  }
 }
 
 

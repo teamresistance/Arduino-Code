@@ -9,7 +9,7 @@ Next-1(641) Sel-2(410) Esc-5(0)
 #include <LiquidCrystal.h>
 #include "DFR_Key.h"
 #include "Menu.h"
-#include "DisplayLCD.h"
+// #include "DisplayLCD.h"
 
 //Pin  for DFRobot LCD Keypad Shield
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7); 
@@ -17,23 +17,32 @@ LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 //Handles button presses
 DFR_Key keypad;
 int localKey = 0;
+int prvKey = 0;
 String keyString = "";
 String keyArray[6] = {"0 - NO KEY", "1 - Next", "2 - Select", "3 - Up", "4 - Dn", "5 - Esc"};
 unsigned long calKeyTimer = 0;
 
 //Create Menus
-#define GATEMENU 0
-#define DEFMENU 1
-#define DIRMENU 2
-Menu GateMenu(5);
-String GateAr[5] = {"1(LB)", "2", "3", "4", "5"};
-Menu DefMenu(5);
-String DefAr[5] = {"Rough Terrain", "Water Xing", "Sally Port", "Tetter Totter", "Low Boy"};
-Menu DirMenu(2);
-String DirAr[2] = {"Forward", "Backward"};
+const int GATEMENU = 0;
+const int DEFMENU = 1;
+const int DIRMENU = 2;
+const int PMAXITEM = 3;
+
+const String GateNames[5] = {"1(LB)", "2", "3", "4", "5"};
+Menu GateMenu(5, GateNames);
+const String DefNames[5] = {"Rough Terrain", "Water Xing", "Sally Port", "Tetter Totter", "Low Boy"};
+Menu DefMenu(5, DefNames);
+String DirNames[2] = {"Forward", "Backward"};
+Menu DirMenu(2, DirNames);
 
 bool aMenuAct = false;
 int primMenuPtr = GATEMENU;
+unsigned long noKeyPressTO = 0;
+bool noKeyPress = false;
+
+String str1;
+String str2;
+
                 
 void setup() 
 { 
@@ -49,29 +58,30 @@ void setup()
 //  array          {None, UP, DWN, LEFT, RIGHT, SEL}
   int keyLimits[6] = {0, 100, 255, 410, 641, 1023}; // DFR ver 1.1
   keypad.set_KeyARV(keyLimits);
+
 }
 
 void loop() 
 { 
   localKey = keypad.getKey();
 
-  if (localKey > NO_KEY) {
-    keyNoPressTime = millis() + (180 * 1000);    
+  if (localKey > NO_KEY) {      //If key pressed, set timeout to 180 Sec.
+    noKeyPressTO = millis() + (180 * 1000);    
   }else { 
-    if (keyNoPress){
-      localKey = NEXT_KEY;
-      keyNoPressTime = millis() + 5 * 1000;
+    if (noKeyPress){            //If no key has been pressed for timeout
+      localKey = NEXT_KEY;      //cancel actMenu or move to next primary display
+      noKeyPressTO = millis() + 5 * 1000; //Do again in 5 sec.
     }
   }
-  keyNoPress = (millis() > keyNoPressTime);
+  noKeyPress = (millis() > noKeyPressTO);
 
   if (localKey > NO_KEY) {    //Key pressed
     aMenuAct = true;
-    if (GateMenu.GetMenuMode != MAINMENU) {
+    if (GateMenu.GetMenuMode() != MAINMENU) {
       GateMenu.UpdateMenu(localKey);
-    }else if (DefMenu.GetMenuMode != MAINMENU) {
+    }else if (DefMenu.GetMenuMode() != MAINMENU) {
       DefMenu.UpdateMenu(localKey);
-    }else if (DirMenu.GetMenuMode != MAINMENU) {
+    }else if (DirMenu.GetMenuMode() != MAINMENU) {
       DirMenu.UpdateMenu(localKey);
     } else {
       aMenuAct = false;
@@ -81,10 +91,10 @@ void loop()
       switch (localKey) {
         case NEXT_KEY:              //--Next
         primMenuPtr++;              //Increment to Next Primary Menu
-        if (primMenuPtr > DIRMENU) primMenu = GATEMENU;
+        if (primMenuPtr > PMAXITEM) primMenuPtr = 0;
         break;
         case SEL_KEY:               //--Select (Left)
-        switch (primMenu) {
+        switch (primMenuPtr) {
           case GATEMENU:            //Pass control to Gate Menu
           GateMenu.UpdateMenu(localKey);
           break;
@@ -95,38 +105,82 @@ void loop()
           DirMenu.UpdateMenu(localKey);
           break;
           default:
+          Serial.print("/nERR-11, primMenuPtr > 2, ");
+          Serial.println(primMenuPtr);
           break;
         }
         break;
         case UP_KEY:                //--Up
         primMenuPtr--;              //Decrement to Prv Primary Menu
-        if (primMenuPtr < GATEMENU) primMenuPtr = DIRMENU;  //Wrap around
+        if (primMenuPtr < 0) primMenuPtr = PMAXITEM;  //Wrap around
         break;
         case DN_KEY:                //--Dn
         primMenuPtr++;              //Increment to Next Primary Menu
-        if (primMenuPtr > DIRMENU) primMenu = GATEMENU;   //Wrap araound
+        if (primMenuPtr > PMAXITEM) primMenuPtr = 0;   //Wrap araound
         break;
         case ESC_KEY:               //--Esc (Right)
-        autoMenuTime = millis();
+        noKeyPressTO = millis();
         break;
         default:
+        Serial.print("/nERR-1, localKey > 5, ");
+        Serial.println(localKey);
         break;
       }
     }
   }
+
   
-  
-  if (localKey != SAMPLE_WAIT)
-  {
-    
+/*
+  if (prvKey != localKey){
     lcd.clear();
     lcd.setCursor(0, 0);
+    if (aMenuAct){
+        switch (primMenuPtr) {
+          case GATEMENU:            //Display Gate Menu
+          str1 = "Act Gate - " & gateAr(GateMenu.GetActPtr())
+          str2 = "Select? - " & gateAr(GateMenu.GetSubPtr())
+          break;
+          case DEFMENU:             //Display Defence Menu
+          str1 = "Act Def - " & defAr(DefMenu.GetActPtr())
+          str2 = "Select? - " & gateAr(DefMenu.GetSubPtr())
+          break;
+          case DIRMENU:             //Display Direction Menu
+          str1 = "Act Dir - " & dirAr(DirMenu.GetActPtr())
+          str2 = "Select? - " & gateAr(DirMenu.GetSubPtr())
+          break;
+          default:
+          Serial.print("/nERR-11, primMenuPtr > 2, ");
+          Serial.println(primMenuPtr);
+          break;
+        }
+    }else {
+        switch (primMenuPtr) {
+          case GATEMENU:            //Display Gate Menu
+          str1 = "Gate - " & gateAr(GateMenu.GetActPtr())
+          str2 = "Def - " & defAr(DefMenu.GetActPtr())
+          break;
+          case DEFMENU:             //Display Defence Menu
+          str1 = "Def - " & defAr(DefMenu.GetActPtr())
+          str2 = "Dir - " & dirAr(DirMenu.GetActPtr())
+          break;
+          case DIRMENU:             //Display Direction Menu
+          str1 = "Dir - " & dirAr(DirMenu.GetActPtr())
+          str2 = "Gate - " & gateAr(GateMenu.GetActPtr())
+          break;
+          default:
+          Serial.print("/nERR-11, primMenuPtr > 2, ");
+          Serial.println(primMenuPtr);
+          break;
+        }
+    }
     line1 = DisplayLCD(1);
     lcd.print(line1);
     lcd.setCursor(0, 1);
     line2 = DisplayLCD(1);
     lcd.print(line2);
   }
+  */
+  prvKey = localKey;
 
 //------------- Calibration mode for buttons -------------------
   if (analogRead(0) == 0) {

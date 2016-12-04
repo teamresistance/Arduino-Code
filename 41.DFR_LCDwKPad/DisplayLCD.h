@@ -10,7 +10,6 @@ class DisplayLCD
 {
   public:	
     DisplayLCD();
-    int getKey();             //Returns the key pressed
     void set_KeyARV(int[6]);  //None-0,Select-1,Left-2
        			                  //Up-3,Down-4,Right-5
     int getKeyARV(int);       //Gets the presently assigned AVR value

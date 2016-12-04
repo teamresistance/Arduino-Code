@@ -4,9 +4,6 @@
 static int DEFAULT_KEY_PIN = 0; 
 static int DEFAULT_THRESHOLD = 5;
 
-static int DFRKEY = 0;
-static int CYTRON = 1;
-
 static int RIGHTKEY_ARV = 0;
 static int UPKEY_ARV = 131;
 static int DOWNKEY_ARV = 307;

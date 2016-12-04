@@ -5,11 +5,11 @@
 
 #define SAMPLE_WAIT -1
 #define NO_KEY 0
-#define NEXT_KEY 1
-#define SEL_KEY 2
+#define SELECT_KEY 1
+#define LEFT_KEY 2
 #define UP_KEY 3
-#define DN_KEY 4
-#define ESC_KEY 5
+#define DOWN_KEY 4
+#define RIGHT_KEY 5
 
 class DFR_Key
 {
