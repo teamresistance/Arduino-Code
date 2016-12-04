@@ -1,17 +1,6 @@
 #include "Arduino.h"
 #include "Menu.h"
 
-int _subMenuPtr;                  //Update Pointer to subMenu choice
-int _menuMode;                    //Used to determine how to handle Sel & Esc
-int _actMenuPtr;                  //Active Pointer to subMenu choice
-int _maxItems;                     //Max menu items
-String itemNames[5];
-
-int pmaxItems = 3;
-const int MAINMODE = 0;
-const int SUBMODE = 1;
-const int CONFMODE = 2;
-
 static int DEFAULT_KEY_PIN = 0; 
 static int DEFAULT_THRESHOLD = 5;
 
@@ -27,16 +16,16 @@ Menu::Menu(int maxItems, String names[]){
   }
 }
 
-int GetMenuMode() {
+int Menu::GetMenuMode() {
   return _menuMode;
 }
 
-int GetActMenu() {
+int Menu::GetActPtr() {
   return _actMenuPtr;
 }
 
-void UpdateMenu(int keyVal){   //Update submenu pointer or action
-  if (keyVal < 0 && keyVal > pmaxItems) {
+void Menu::UpdateMenu(int keyVal){   //Update submenu pointer or action
+  if (keyVal < 0 && keyVal > _maxItems) {
     switch (keyVal) {
       case 1:               //--Next Prim
       _subMenuPtr = 0;              //Cancel Update
@@ -49,7 +38,7 @@ void UpdateMenu(int keyVal){   //Update submenu pointer or action
         _menuMode = SUBMENU;        //and set mode to SubMenu(1)
         break;
         case SUBMENU:               //SubMenu(1) Mode
-          _menuMode = CONFMODE;     //Set to Confirm(2) mode
+          _menuMode = CONFMENU;     //Set to Confirm(2) mode
         break;
         case CONFMENU:              //Confirm(2) Mode
         _actMenuPtr = _subMenuPtr;  //Set actMenuPtr to subMenuPtr
@@ -77,7 +66,7 @@ void UpdateMenu(int keyVal){   //Update submenu pointer or action
         case SUBMENU:             //SubMenu(1)
         _menuMode = MAINMENU;     //Set back to Main(0) Mode
         break;
-        case CONFMODE:            //Confirm(2) Mode
+        case CONFMENU:            //Confirm(2) Mode
         _menuMode = SUBMENU;      //Set back to SubMenu(1) Mode
         break;
         default:
