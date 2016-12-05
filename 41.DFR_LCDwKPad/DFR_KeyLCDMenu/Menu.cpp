@@ -24,6 +24,10 @@ int Menu::GetActPtr() {
   return _actMenuPtr;
 }
 
+int Menu::GetSubPtr() {
+  return _subMenuPtr;
+}
+
 void Menu::UpdateMenu(int keyVal){   //Update submenu pointer or action
   if (keyVal < 0 && keyVal > _maxItems) {
     switch (keyVal) {
