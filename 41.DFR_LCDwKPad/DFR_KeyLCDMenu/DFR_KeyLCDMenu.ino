@@ -32,16 +32,16 @@ const String GateNames[5] = {"1(LB)", "2", "3", "4", "5"};
 Menu GateMenu(5, GateNames);
 const String DefNames[5] = {"Rough Terrain", "Water Xing", "Sally Port", "Tetter Totter", "Low Boy"};
 Menu DefMenu(5, DefNames);
-String DirNames[2] = {"Forward", "Backward"};
+String DirNames[4] = {"Forward", "Backward", "Fwd", "Bkwd"};
 Menu DirMenu(2, DirNames);
 
 const int NOKEYPRSPRIMTM = 5;     //Seconds to display next Primary menu when in auto mode
 const int NOKEYPRSSUBTM = 180;    //Seconds if no key pressed in sub menu to return to auto mode
-unsigned long noKeyPressTO = 0;   //Timeout timer for No Key Pressed
+unsigned long noKeyPrsTm = 0;   //Timeout timer for No Key Pressed
 bool noKeyPress = false;          //No key pressed for some time
 bool aMenuAct = false;            //A sub menu active
+bool prvaMenuAct = false;
 int primMenuPtr = GATEMENU;       //Pointer to Primary menu
-int pvKey = NO_KEY;
 unsigned long keyRptTm = 0;       //Time to repeat a key held down & debounce
 
 String str1;
@@ -68,33 +68,21 @@ const  int keyLimits[6] = {0, 100, 255, 410, 641, 1023}; // DFR ver 1.1
 void loop() 
 { 
   localKey = keypad.getKey();
-  Serial.print("1- ");
-  Serial.print(localKey);
+//  Serial.print("1- ");
+//  Serial.print(localKey);
   
-  if (localKey > NO_KEY && localKey == prvKey) {
-    if (millis() < keyRptTm) {
-      localKey = NO_KEY;
-    }else{
-      keyRptTm = millis() + 1000;      
-    }
-  }else{
-    prvKey = localKey;
-  }
-  Serial.print("    2- ");
-  Serial.print(localKey);
-
   if (localKey > NO_KEY) {      //If key pressed, set timeout to 180 Sec.
-    noKeyPressTO = millis() + (NOKEYPRSSUBTM * 1000); //Wait 180 sec if no key prs
-  }else { 
-    if (noKeyPress){            //If no key has been pressed for timeout
-      localKey = NEXT_KEY;      //cancel actMenu or move to next primary display
-      noKeyPressTO = millis() + NOKEYPRSPRIMTM * 1000; //Do again in 5 sec.
-    }
+    noKeyPrsTm = millis() + (NOKEYPRSSUBTM * 1000L); //Wait 180 sec if no key prs
   }
-  noKeyPress = (millis() > noKeyPressTO);   //Check no key timeout
-  Serial.print("    3-");
-  Serial.println(localKey);
+//  Serial.print("    3-");
+//  Serial.println((NOKEYPRSSUBTM * 1000L));
   delay(100);
+
+  noKeyPress = (millis() > noKeyPrsTm);   //Check no key timeout
+  if (noKeyPress){            //If no key has been pressed for timeout
+    localKey = NEXT_KEY;      //cancel actMenu or move to next primary display
+    noKeyPrsTm = millis() + NOKEYPRSPRIMTM * 1000; //Do again in 5 sec.
+  }
   
   if (localKey > NO_KEY) {    //Key pressed
     aMenuAct = true;          //Initialize a Menu Active
@@ -111,83 +99,103 @@ void loop()
     if (!aMenuAct) {                //Primary Menu handler
       switch (localKey) {
         case NEXT_KEY:              //--Next
-        primMenuPtr++;              //Increment to Next Primary Menu
-        if (primMenuPtr > PMAXITEM) primMenuPtr = 0;
-        break;
+          primMenuPtr++;              //Increment to Next Primary Menu
+          if (primMenuPtr >= PMAXITEM) primMenuPtr = 0; //Wrap around
+          break;
         case SEL_KEY:               //--Select (Left)
-        switch (primMenuPtr) {
-          case GATEMENU:            //Pass control to Gate Menu
-          GateMenu.UpdateMenu(localKey);
+          switch (primMenuPtr) {
+            case GATEMENU:            //Pass control to Gate Menu
+              GateMenu.UpdateMenu(localKey);
+              aMenuAct = true;
+              break;
+            case DEFMENU:             //Pass control to Defence Menu
+              DefMenu.UpdateMenu(localKey);
+              aMenuAct = true;
+              break;
+            case DIRMENU:             //Pass control to Direction Menu
+              DirMenu.UpdateMenu(localKey);
+              aMenuAct = true;
+              break;
+            default:
+  //          Serial.print("\nERR-11, primMenuPtr > 2, ");
+  //          Serial.println(primMenuPtr);
+              break;
+          }
           break;
-          case DEFMENU:             //Pass control to Defence Menu
-          DefMenu.UpdateMenu(localKey);
-          break;
-          case DIRMENU:             //Pass control to Direction Menu
-          DirMenu.UpdateMenu(localKey);
-          break;
-          default:
-//          Serial.print("\nERR-11, primMenuPtr > 2, ");
-//          Serial.println(primMenuPtr);
-          break;
-        }
-        break;
         case UP_KEY:                //--Up
-        primMenuPtr--;              //Decrement to Prv Primary Menu
-        if (primMenuPtr < 0) primMenuPtr = PMAXITEM;  //Wrap around
-        break;
+          primMenuPtr--;              //Decrement to Prv Primary Menu
+          if (primMenuPtr < 0) primMenuPtr = (PMAXITEM - 1);  //Wrap around
+          break;
         case DN_KEY:                //--Dn
-        primMenuPtr++;              //Increment to Next Primary Menu
-        if (primMenuPtr > PMAXITEM) primMenuPtr = 0;   //Wrap araound
-        break;
+          primMenuPtr++;              //Increment to Next Primary Menu
+          if (primMenuPtr >= PMAXITEM) primMenuPtr = 0;   //Wrap araound
+          break;
         case ESC_KEY:               //--Esc (Right)
-        noKeyPressTO = millis();
-        break;
+          noKeyPrsTm = millis();
+          break;
         default:
 //        Serial.print("\nERR-1, localKey > 5, ");
 //        Serial.println(localKey);
-        break;
+          break;
       }
     }
   }
 
-  if (prvKey != localKey){
-    if (aMenuAct){
+//---------  Do Display  -----------------
+  if (prvKey != localKey || prvaMenuAct == aMenuAct){
+    if (aMenuAct){            //Display as Sub Menu
         switch (primMenuPtr) {
           case GATEMENU:            //Display Gate Menu
-          str1 = "Act Gate - " + GateNames[GateMenu.GetActPtr()];
-          str2 = "Select? - " + GateNames[GateMenu.GetSubPtr()];
-          break;
+            if (GateMenu.GetMenuMode() == SUBMENU){
+              str2 = "Sel? - ";
+            }else{
+              str2 = "Conf? - ";
+            }
+            str1 = "Act Gate - " + GateNames[GateMenu.GetActPtr()];
+            str2 = str2 + GateNames[GateMenu.GetSubPtr()];
+            break;
           case DEFMENU:             //Display Defence Menu
-          str1 = "Act Def - " + DefNames[DefMenu.GetActPtr()];
-          str2 = "Select? - " + GateNames[DefMenu.GetSubPtr()];
-          break;
+            if (DefMenu.GetMenuMode() == SUBMENU){
+              str2 = "Sel? - ";
+            }else{
+              str2 = "Conf? - ";
+            }
+            str1 = "Act Def - " + DefNames[DefMenu.GetActPtr()];
+            str2 = str2 + DefNames[DefMenu.GetSubPtr()];
+            break;
           case DIRMENU:             //Display Direction Menu
-          str1 = "Act Dir - " + DirNames[DirMenu.GetActPtr()];
-          str2 = "Select? - " + GateNames[DirMenu.GetSubPtr()];
-          break;
+            Serial.println("Dir Here");
+            if (DirMenu.GetMenuMode() == SUBMENU){
+              str2 = "Sel? - ";
+            }else{
+              str2 = "Conf? - ";
+            }
+            str1 = "Act Dir - " + DirNames[DirMenu.GetActPtr()];
+            str2 = str2 + DirNames[DirMenu.GetSubPtr()];
+            break;
           default:
 //          Serial.print("/nERR-11, primMenuPtr > 2, ");
 //          Serial.println(primMenuPtr);
-          break;
+            break;
         }
-    }else {
+    }else {             //Display as Primary Menu
         switch (primMenuPtr) {
           case GATEMENU:            //Display Gate Menu
-          str1 = "Gate - " + GateNames[GateMenu.GetActPtr()];
-          str2 = "Def - " + DefNames[DefMenu.GetActPtr()];
-          break;
+            str1 = "Gate - " + GateNames[GateMenu.GetActPtr()];
+            str2 = "Def - " + DefNames[DefMenu.GetActPtr()];
+            break;
           case DEFMENU:             //Display Defence Menu
-          str1 = "Def - " + DefNames[DefMenu.GetActPtr()];
-          str2 = "Dir - " + DirNames[DirMenu.GetActPtr()];
-          break;
+            str1 = "Def - " + DefNames[DefMenu.GetActPtr()];
+            str2 = "Dir - " + DirNames[DirMenu.GetActPtr()];
+            break;
           case DIRMENU:             //Display Direction Menu
-          str1 = "Dir - " + DirNames[DirMenu.GetActPtr()];
-          str2 = "Gate - " + GateNames[GateMenu.GetActPtr()];
-          break;
+            str1 = "Dir - " + DirNames[DirMenu.GetActPtr()];
+            str2 = "Gate - " + GateNames[GateMenu.GetActPtr()];
+            break;
           default:
 //          Serial.print("/nERR-11, primMenuPtr > 2, ");
 //          Serial.println(primMenuPtr);
-          break;
+            break;
         }
     }
     lcd.clear();
@@ -198,6 +206,7 @@ void loop()
   }
 
   prvKey = localKey;
+  prvaMenuAct = aMenuAct;
 
 //------------- Calibration mode for buttons -------------------
   if (analogRead(0) == 0) {

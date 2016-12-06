@@ -63,34 +63,34 @@ int DFR_Key::getKeyARV(int keyARVIndx)
 
 int DFR_Key::getKey()
 {
-  _curInput = analogRead(_keyPin);
+  do {
+    _curInput = analogRead(_keyPin);
+    delayMicroseconds(10);
+  } while (_curInput != analogRead(_keyPin));
   
-  if (_threshold > abs(_curInput - _prvInput)){
-	  switch ((_curInput + 50) / 100) {
-		  case 0:
-			_curKey = RIGHT_KEY;
-			break;
-		  case 1:
-			_curKey = UP_KEY;
-			break;
-		  case 2:
-		  case 3:
-			_curKey = DOWN_KEY;
-			break;
-		  case 4:
-		  case 5:
-			_curKey = LEFT_KEY;
-			break;
-		  case 6:
-		  case 7:
-			_curKey = SELECT_KEY;
-			break;
-		  default:
-			_curKey = NO_KEY;
-			break;
-	  }
+  switch ((_curInput + 50) / 100) {
+	  case 0:
+		_curKey = RIGHT_KEY;
+		break;
+	  case 1:
+		_curKey = UP_KEY;
+		break;
+	  case 2:
+	  case 3:
+		_curKey = DOWN_KEY;
+		break;
+	  case 4:
+	  case 5:
+		_curKey = LEFT_KEY;
+		break;
+	  case 6:
+	  case 7:
+		_curKey = SELECT_KEY;
+		break;
+	  default:
+		_curKey = NO_KEY;
+		break;
   }
-  _prvInput = _curInput;
 
   if (_curKey != _prvKey || _curKey == NO_KEY){
     _prvKey = _curKey;

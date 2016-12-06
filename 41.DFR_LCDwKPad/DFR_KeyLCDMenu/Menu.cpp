@@ -29,58 +29,74 @@ int Menu::GetSubPtr() {
 }
 
 void Menu::UpdateMenu(int keyVal){   //Update submenu pointer or action
-  if (keyVal < 0 && keyVal > _maxItems) {
+  Serial.println();
+  Serial.print(keyVal);
+  Serial.print("\t");
+  Serial.print(_menuMode);
+  Serial.print("\t");
+  Serial.println(_subMenuPtr);
+  
+  if (keyVal > 0 && keyVal < _maxItems) {
     switch (keyVal) {
       case 1:               //--Next Prim
-      _subMenuPtr = 0;              //Cancel Update
-      _menuMode = 0;
-      break;
+        Serial.println("Sub-Next");
+        _subMenuPtr = _actMenuPtr;              //Cancel Update
+        _menuMode = 0;
+        break;
       case 2:               //--Select (Left)
-      switch (_menuMode) {
-        case MAINMENU:              //MainMenu(0) Mode
-        _subMenuPtr = _actMenuPtr;  //Set to prv choice
-        _menuMode = SUBMENU;        //and set mode to SubMenu(1)
+        Serial.println("Sub-Select");
+        switch (_menuMode) {
+          case MAINMENU:              //MainMenu(0) Mode
+            _subMenuPtr = _actMenuPtr;  //Set to prv choice
+            _menuMode = SUBMENU;        //and set mode to SubMenu(1)
+            break;
+          case SUBMENU:               //SubMenu(1) Mode
+            _menuMode = CONFMENU;     //Set to Confirm(2) mode
+            break;
+          case CONFMENU:              //Confirm(2) Mode
+            _actMenuPtr = _subMenuPtr;  //Set actMenuPtr to subMenuPtr
+            _menuMode = MAINMENU;       //and mode to Main(0) Mode
+            break;
+          default:
+            break;
+        }
         break;
-        case SUBMENU:               //SubMenu(1) Mode
-          _menuMode = CONFMENU;     //Set to Confirm(2) mode
-        break;
-        case CONFMENU:              //Confirm(2) Mode
-        _actMenuPtr = _subMenuPtr;  //Set actMenuPtr to subMenuPtr
-        _menuMode = MAINMENU;       //and mode to Main(0) Mode
-        break;
-        default:
-        break;
-      }
-      break;
       case 3:             //--Up
-      _subMenuPtr-- ;             //Decrement subMenuPtr
-      if (_subMenuPtr < 1) _subMenuPtr = _maxItems;  //Rap-around
-      _menuMode = 1;
-      break;
+        Serial.println("Sub-Up");
+        _subMenuPtr-- ;             //Decrement subMenuPtr
+        if (_subMenuPtr < 0) _subMenuPtr = _maxItems - 1;  //Rap-around
+        break;
       case 4:             //--Dn
-      _subMenuPtr++;              //Increment subMenuPtr
-      if (_subMenuPtr > 1) _subMenuPtr = 1;          //Rap-around
-      _menuMode = 0;
-      break;
+        Serial.println("Sub-Dn");
+        _subMenuPtr++;              //Increment subMenuPtr
+        if (_subMenuPtr >= _maxItems) _subMenuPtr = 0;          //Rap-around
+        break;
       case 5:             //--Esc (Right)
-      switch (_menuMode) {
-        case MAINMENU:            //Main(0) Mode
-        // do nothing.  Should be handled in main code
+        Serial.println("Sub-Esc");
+        switch (_menuMode) {
+          case MAINMENU:            //Main(0) Mode
+            // do nothing.  Should be handled in main code
+            break;
+          case SUBMENU:             //SubMenu(1)
+            _menuMode = MAINMENU;     //Set back to Main(0) Mode
+            break;
+          case CONFMENU:            //Confirm(2) Mode
+            _menuMode = SUBMENU;      //Set back to SubMenu(1) Mode
+            break;
+          default:
+            break;
+        }
         break;
-        case SUBMENU:             //SubMenu(1)
-        _menuMode = MAINMENU;     //Set back to Main(0) Mode
-        break;
-        case CONFMENU:            //Confirm(2) Mode
-        _menuMode = SUBMENU;      //Set back to SubMenu(1) Mode
-        break;
-        default:
-        break;
-      }
-      break;
       default:        //--Default
-      break;
+        break;
     }
   }
+  Serial.println();
+  Serial.print(keyVal);
+  Serial.print("\t");
+  Serial.print(_menuMode);
+  Serial.print("\t");
+  Serial.println(_subMenuPtr);
+  
 }
-
 
