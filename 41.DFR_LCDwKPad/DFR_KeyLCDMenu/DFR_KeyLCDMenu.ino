@@ -41,6 +41,8 @@ unsigned long noKeyPressTO = 0;   //Timeout timer for No Key Pressed
 bool noKeyPress = false;          //No key pressed for some time
 bool aMenuAct = false;            //A sub menu active
 int primMenuPtr = GATEMENU;       //Pointer to Primary menu
+int pvKey = NO_KEY;
+unsigned long keyRptTm = 0;       //Time to repeat a key held down & debounce
 
 String str1;
 String str2;
@@ -59,13 +61,27 @@ const  int keyLimits[6] = {0, 100, 255, 410, 641, 1023}; // DFR ver 1.1
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Menu System v0.1");
-  delay(2500);
+  delay(1500);
 
 }
 
 void loop() 
 { 
   localKey = keypad.getKey();
+  Serial.print("1- ");
+  Serial.print(localKey);
+  
+  if (localKey > NO_KEY && localKey == prvKey) {
+    if (millis() < keyRptTm) {
+      localKey = NO_KEY;
+    }else{
+      keyRptTm = millis() + 1000;      
+    }
+  }else{
+    prvKey = localKey;
+  }
+  Serial.print("    2- ");
+  Serial.print(localKey);
 
   if (localKey > NO_KEY) {      //If key pressed, set timeout to 180 Sec.
     noKeyPressTO = millis() + (NOKEYPRSSUBTM * 1000); //Wait 180 sec if no key prs
@@ -76,7 +92,10 @@ void loop()
     }
   }
   noKeyPress = (millis() > noKeyPressTO);   //Check no key timeout
-
+  Serial.print("    3-");
+  Serial.println(localKey);
+  delay(100);
+  
   if (localKey > NO_KEY) {    //Key pressed
     aMenuAct = true;          //Initialize a Menu Active
     if (GateMenu.GetMenuMode() != MAINMENU) {       //Pass key to Gate if active
@@ -107,8 +126,8 @@ void loop()
           DirMenu.UpdateMenu(localKey);
           break;
           default:
-          Serial.print("\nERR-11, primMenuPtr > 2, ");
-          Serial.println(primMenuPtr);
+//          Serial.print("\nERR-11, primMenuPtr > 2, ");
+//          Serial.println(primMenuPtr);
           break;
         }
         break;
@@ -124,8 +143,8 @@ void loop()
         noKeyPressTO = millis();
         break;
         default:
-        Serial.print("\nERR-1, localKey > 5, ");
-        Serial.println(localKey);
+//        Serial.print("\nERR-1, localKey > 5, ");
+//        Serial.println(localKey);
         break;
       }
     }
@@ -147,8 +166,8 @@ void loop()
           str2 = "Select? - " + GateNames[DirMenu.GetSubPtr()];
           break;
           default:
-          Serial.print("/nERR-11, primMenuPtr > 2, ");
-          Serial.println(primMenuPtr);
+//          Serial.print("/nERR-11, primMenuPtr > 2, ");
+//          Serial.println(primMenuPtr);
           break;
         }
     }else {
@@ -166,8 +185,8 @@ void loop()
           str2 = "Gate - " + GateNames[GateMenu.GetActPtr()];
           break;
           default:
-          Serial.print("/nERR-11, primMenuPtr > 2, ");
-          Serial.println(primMenuPtr);
+//          Serial.print("/nERR-11, primMenuPtr > 2, ");
+//          Serial.println(primMenuPtr);
           break;
         }
     }

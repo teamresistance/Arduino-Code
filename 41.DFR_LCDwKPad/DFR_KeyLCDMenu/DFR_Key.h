@@ -28,11 +28,12 @@ class DFR_Key
     int _keyIn;
     int _curInput;
     int _curKey;
-    int _prevInput;
-    int _prevKey;
+    int _prvInput;
+    int _prvKey;
     boolean _change;
     unsigned long _nxTime;
-    int _tmpVal;
+    unsigned long _rptKeyTm;
+    unsigned long _rptKeyTmr;
 };
 
 #endif

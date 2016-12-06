@@ -13,15 +13,16 @@ static int NOKEY_ARV = 1023;
 
 DFR_Key::DFR_Key()
 {	
-  _refreshRate = 10;
+  _refreshRate = 500;
   _keyPin = DEFAULT_KEY_PIN;
   _threshold = DEFAULT_THRESHOLD;
   _keyIn = NO_KEY;
   _curInput = NO_KEY;
   _curKey = NO_KEY;
-  _prevInput = NO_KEY;
-  _prevKey = NO_KEY;
+  _prvInput = NO_KEY;
+  _prvKey = SAMPLE_WAIT;
   _nxTime = 0;
+  _rptKeyTm = 500;
 }
 
 void DFR_Key::set_KeyARV(int keyARVs[])
@@ -62,46 +63,46 @@ int DFR_Key::getKeyARV(int keyARVIndx)
 
 int DFR_Key::getKey()
 {
- if (millis() > _nxTime)
- {
-    _curInput = analogRead(_keyPin);
+  _curInput = analogRead(_keyPin);
   
-    if (_threshold > abs(_curInput - _prevInput))
-    {
-      _change = false;
-      _curKey = _prevKey;
+  if (_threshold > abs(_curInput - _prvInput)){
+	  switch ((_curInput + 50) / 100) {
+		  case 0:
+			_curKey = RIGHT_KEY;
+			break;
+		  case 1:
+			_curKey = UP_KEY;
+			break;
+		  case 2:
+		  case 3:
+			_curKey = DOWN_KEY;
+			break;
+		  case 4:
+		  case 5:
+			_curKey = LEFT_KEY;
+			break;
+		  case 6:
+		  case 7:
+			_curKey = SELECT_KEY;
+			break;
+		  default:
+			_curKey = NO_KEY;
+			break;
+	  }
+  }
+  _prvInput = _curInput;
+
+  if (_curKey != _prvKey || _curKey == NO_KEY){
+    _prvKey = _curKey;
+    _rptKeyTmr = millis() + _rptKeyTm;
+    return _curKey;
+  }else{
+    if (millis() > _rptKeyTmr){
+      _rptKeyTmr = millis() + _rptKeyTm;
+      return _curKey;
+    }else{
+      return SAMPLE_WAIT;
     }
-    else
-    {
-      _change = true;
-      _prevKey = _curKey;
-  	  _prevInput = _curInput;
-  	  switch ((_curInput + 50) / 100) {
-  		  case 0:
-  			_curKey = RIGHT_KEY;
-  			break;
-  		  case 1:
-  			_curKey = UP_KEY;
-  			break;
-  		  case 2:
-  		  case 3:
-  			_curKey = DOWN_KEY;
-  			break;
-  		  case 4:
-  		  case 5:
-  			_curKey = LEFT_KEY;
-  			break;
-  		  case 6:
-  		  case 7:
-  			_curKey = SELECT_KEY;
-  			break;
-  		  default:
-  			_curKey = NO_KEY;
-  			break;
-  	  }
-    }
-    if (_change) return _curKey; else return SAMPLE_WAIT;
-    _nxTime = millis() + _refreshRate;
   }
 }
 
