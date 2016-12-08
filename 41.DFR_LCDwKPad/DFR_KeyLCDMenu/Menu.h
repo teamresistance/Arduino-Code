@@ -17,7 +17,8 @@
 class Menu
 {
   public:	
-    Menu(int maxItems, String names[]);
+    Menu();                           //Object Constructor
+    void SetMaxItems(int maxItems);   //Set max items
     int GetMenuMode();                //Returns Menu Mode, Main, Sub, Confirm
     int GetActPtr();                  //Returns Active Menu Pointer, 1 to max items
     int GetSubPtr();                  //Returns Sub Menu Pointer, 1 to max items

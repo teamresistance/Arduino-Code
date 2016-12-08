@@ -9,7 +9,6 @@ Next-1(641) Sel-2(410) Esc-5(0)
 #include <LiquidCrystal.h>
 #include "DFR_Key.h"
 #include "Menu.h"
-// #include "DisplayLCD.h"
 
 //Pin  for DFRobot LCD Keypad Shield
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7); 
@@ -28,26 +27,28 @@ const int GATEMENU = 0;
 const int DEFMENU = 1;
 const int DIRMENU = 2;
 
-const String GateNames[5] = {"1(LB)", "2", "3", "4", "5"};
-Menu GateMenu(5, GateNames);
-const String DefNames[5] = {"Rough Terrain", "Water Xing", "Sally Port", "Tetter Totter", "Low Boy"};
-Menu DefMenu(5, DefNames);
-const String DirNames[4] = {"Forward", "Backward", "Left", "Right"};
-Menu DirMenu(4, DirNames);
+const int GATEITEMS = 5;
+const String GateNames[GATEITEMS] = {"1(LB)", "2", "3", "4", "5"};
+Menu GateMenu;
+const int DEFITEMS = 5;
+const String DefNames[DEFITEMS] = {"Rough Terrain", "Water Xing", "Sally Port", "Tetter Totter", "Low Boy"};
+Menu DefMenu;
+const int DIRITEMS = 4;
+const String DirNames[DIRITEMS] = {"Forward", "Backward", "Left", "Right"};
+Menu DirMenu;
 
 const int NOKEYPRSPRIMTM = 5;     //Seconds to display next Primary menu when in auto mode
 const int NOKEYPRSSUBTM = 180;    //Seconds if no key pressed in sub menu to return to auto mode
-unsigned long noKeyPrsTm = 0;   //Timeout timer for No Key Pressed
+unsigned long noKeyPrsTmr = 0;    //Timeout timer for No Key Pressed
 bool noKeyPress = false;          //No key pressed for some time
 bool aMenuAct = false;            //A sub menu active
 bool prvaMenuAct = false;
 int primMenuPtr = GATEMENU;       //Pointer to Primary menu
 unsigned long keyRptTm = 0;       //Time to repeat a key held down & debounce
 
-String str1;
-String str2;
+String str1;                      //Line 1 of LCD
+String str2;                      //Line 2 of LCD
 
-                
 void setup() 
 { 
   Serial.begin(9600);   //Console troubleshooting
@@ -57,12 +58,15 @@ void setup()
 const  int keyLimits[6] = {0, 100, 255, 410, 641, 1023}; // DFR ver 1.1
   keypad.set_KeyARV(keyLimits);
 
+  GateMenu.SetMaxItems(GATEITEMS);
+  DefMenu.SetMaxItems(DEFITEMS);
+  DirMenu.SetMaxItems(DIRITEMS);
+
   lcd.begin(16, 2);
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Menu System v0.1");
   delay(1000);
-
 }
 
 void loop() 
@@ -70,13 +74,13 @@ void loop()
   localKey = keypad.getKey();
   
   if (localKey > NO_KEY) {      //If key pressed, set timeout to 180 Sec.
-    noKeyPrsTm = millis() + (NOKEYPRSSUBTM * 1000L); //Wait 180 sec if no key prs
+    noKeyPrsTmr = millis() + (NOKEYPRSSUBTM * 1000L); //Wait 180 sec if no key prs
   }
 
-  noKeyPress = (millis() > noKeyPrsTm);   //Check no key timeout
+  noKeyPress = (millis() > noKeyPrsTmr);   //Check no key timeout
   if (noKeyPress){            //If no key has been pressed for timeout
     localKey = NEXT_KEY;      //cancel actMenu or move to next primary display
-    noKeyPrsTm = millis() + NOKEYPRSPRIMTM * 1000; //Do again in 5 sec.
+    noKeyPrsTmr = millis() + NOKEYPRSPRIMTM * 1000L; //Do again in 5 sec.
   }
   
   if (localKey > NO_KEY) {    //Key pressed
@@ -125,7 +129,7 @@ void loop()
           if (primMenuPtr >= PMAXITEM) primMenuPtr = 0;   //Wrap araound
           break;
         case ESC_KEY:               //--Esc (Right)
-          noKeyPrsTm = millis();
+          noKeyPrsTmr = millis() + (NOKEYPRSSUBTM * 1000L);
           break;
         default:
           Serial.print("\nERR-1, localKey > 5, ");

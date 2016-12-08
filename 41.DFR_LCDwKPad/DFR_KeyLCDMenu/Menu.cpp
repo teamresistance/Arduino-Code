@@ -4,16 +4,15 @@
 static int DEFAULT_KEY_PIN = 0; 
 static int DEFAULT_THRESHOLD = 5;
 
-Menu::Menu(int maxItems, String names[]){
-  _maxItems = maxItems;     //Set the max # of items in the Menu
+Menu::Menu(){              //Object Constructor
+  _maxItems = 5;           //default max # of items in the Menu
   _menuMode = MAINMENU;    //Used to determine how to handle Sel & Esc
   _subMenuPtr = 0;         //Update Pointer to subMenu choice
   _actMenuPtr = 0;         //Active Pointer to subMenu choice
+}
 
-  String itemName[_maxItems];
-  for (int i = 0; i < _maxItems; i++){
-    itemName[i] = names[i];
-  }
+void Menu::SetMaxItems(int maxItems) {
+  _maxItems = maxItems;
 }
 
 int Menu::GetMenuMode() {
