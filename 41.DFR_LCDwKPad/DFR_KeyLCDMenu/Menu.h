@@ -17,18 +17,21 @@
 class Menu
 {
   public:	
-    Menu();                           //Object Constructor
-    void SetMaxItems(int maxItems);   //Set max items
+    Menu();
+    void SetMaxItems(int maxItems);
+    void SetNames(String * p_names);
     int GetMenuMode();                //Returns Menu Mode, Main, Sub, Confirm
     int GetActPtr();                  //Returns Active Menu Pointer, 1 to max items
+    String GetActName();
     int GetSubPtr();                  //Returns Sub Menu Pointer, 1 to max items
+    String GetSubName();
     void UpdateMenu(int keyVal);      //Update submenu pointer or action
   private:
+    int _maxItems;                    //Max number of items
     int _subMenuPtr;                  //Update Pointer to subMenu choice
     int _menuMode;                    //Used to determine how to handle Sel & Esc
     int _actMenuPtr;                  //Active Pointer to subMenu choice
-    int _maxItems;                     //Max menu items
-    String itemNames[];
+    String * _p_names;            //Pointer to menu names
 };
 
 #endif

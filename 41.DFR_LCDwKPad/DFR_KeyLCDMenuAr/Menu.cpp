@@ -5,14 +5,18 @@ static int DEFAULT_KEY_PIN = 0;
 static int DEFAULT_THRESHOLD = 5;
 
 Menu::Menu(){
-  _menuMode = MAINMENU;    //Used to determine how to handle Sel & Esc
-  _subMenuPtr = 0;         //Update Pointer to subMenu choice
-  _actMenuPtr = 0;         //Active Pointer to subMenu choice
+  _menuMode = MAINMENU;     //Used to determine how to handle Sel & Esc
+  _subMenuPtr = 0;          //Update Pointer to subMenu choice
+  _actMenuPtr = 0;          //Active Pointer to subMenu choice
 
 }
 
-void SetMaxItems(int maxItems){
+void Menu::SetMaxItems(int maxItems){
   _maxItems = maxItems;     //Set the max # of items in the Menu
+}
+
+void Menu::SetNames(String * p_names){
+  _p_names = p_names;     //Save pointer to menu names
 }
 
 int Menu::GetMenuMode() {
@@ -23,8 +27,16 @@ int Menu::GetActPtr() {
   return _actMenuPtr;
 }
 
+String Menu::GetActName() {
+  return *(_p_names + _actMenuPtr);
+}
+
 int Menu::GetSubPtr() {
   return _subMenuPtr;
+}
+
+String Menu::GetSubName() {
+  return *(_p_names + _subMenuPtr);
 }
 
 void Menu::UpdateMenu(int keyVal){   //Update submenu pointer or action
